@@ -67,7 +67,7 @@ public class TrayectosService {
     // CU002 Agregar ubicacion al Trayecto
     // 1. Ingresa el id del trayecto en curso
     // 4. Ingresa la longitud y la latitud de la ubicación actual
-    public void agregarUbicacionATrayecto(
+    public UUID agregarUbicacionATrayecto(
         UUID idTrayecto,
         Double longitud,
         Double latitud
@@ -100,8 +100,10 @@ public class TrayectosService {
         trayecto.getUbicaciones().add(ubicacion);
         ubicacion.setTrayecto(trayecto);
 
-        trayectos.save(trayecto);
-        ubicaciones.save(ubicacion);
+        trayecto = trayectos.save(trayecto);
+        ubicacion = ubicaciones.save(ubicacion);
+
+        return ubicacion.getId();
 
     }
 
