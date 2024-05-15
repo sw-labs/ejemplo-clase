@@ -1,0 +1,72 @@
+# nombre del pipeline
+name: Compila y despliega aplicación en Azure
+
+# parámetros
+env:
+  PROJECT_NAME: 'trayectos'           # colocar el nombre del proyecto java
+  AZURE_WEBAPP_NAME: MY_WEBAPP_NAME   # colocar el nombre de la aplicación
+  JAVA_VERSION: '21'                  # colocar la versión de java
+  DISTRIBUTION: zulu                  # colocar la distribución de Java a utilizar
+
+# ejecutar cuando se haga push a la rama main o al hacer clic en la pantalla
+on:
+  push:
+    branches: 
+      - main
+  workflow_dispatch:
+
+# tareas
+jobs:
+
+  # trabajo con el nombre compilar
+  compilar:
+    # se ejecuta en linux Ubuntu
+    runs-on: ubuntu-latest
+
+    # pasos
+    steps:
+
+      - name: Descarga el código fuente
+        uses: actions/checkout@v4
+
+      - name: Configura la versión de Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: ${{ env.DISTRIBUTION }}
+          cache: 'maven'
+
+      - name: Compila usando Maven
+        run: mvn clean install
+
+      - name: Carga el artifacto para la tarea de despliegue
+        uses: actions/upload-artifact@v4
+        with:
+          name: java-app
+          path: '${{ github.workspace }}/${{ env.PROJECT_NAME }}/target/*.jar'
+
+  # tarea de despliegue
+  desplegar:
+    # se ejecuta en linux Ubuntu
+    runs-on: ubuntu-latest
+    # depende de la tarea compilar
+    needs: compilar
+  
+    # modifica el entorno de producción
+    environment:
+      name: 'production'
+      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
+
+    steps:
+      - name: Descarga el artifacto de la tarea compilar
+        uses: actions/download-artifact@v4
+        with:
+          name: java-app
+
+      - name: Despliega en Azure App Services
+        id: deploy-to-webapp
+        uses: azure/webapps-deploy@85270a1854658d167ab239bce43949edb336fa7c
+        with:
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          package: '*.jar'
