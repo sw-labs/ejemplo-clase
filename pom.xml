@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>com.bicicletas</groupId>
-	<artifactId>parent-projecy</artifactId>
+	<artifactId>parent-project</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 	<name>parent-project</name>
@@ -12,6 +12,5 @@
     <modules>
         <module>trayectos</module>
     </modules>
-
 
 </project>    
